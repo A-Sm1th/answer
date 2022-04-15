@@ -5,10 +5,16 @@ import faust
 
 app = faust.App("myapp", broker="kafka://localhost:29092")
 topic = app.topic("unique_users")
+event_per_minute = app.topic("EventPerMinute")
+
+
+class UniqueIDPerMinutes(faust.Record):
+    date: str
+    distincts_id: int
 
 
 @app.agent(topic)
-async def uniqueUsers(messages):
+async def uniqueUsers(messages, sink=[event_per_minute]):
     data_per_minute = [{"ts": "", "uids": []}]
     async for event in messages:
         minute_event = {}
