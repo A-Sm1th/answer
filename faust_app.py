@@ -3,18 +3,19 @@ from datetime import datetime as dt
 
 import faust
 
-app = faust.App("myapp", broker="kafka://localhost:29092")
-topic = app.topic("unique_users")
-event_per_minute = app.topic("EventPerMinute")
-
 
 class UniqueIDPerMinutes(faust.Record):
     date: str
     distincts_id: int
 
 
-@app.agent(topic)
-async def uniqueUsers(messages, sink=[event_per_minute]):
+app = faust.App("myapp", broker="kafka://localhost:29092")
+unique_users = app.topic("unique_users")
+events_per_minute = app.topic("events_per_minute", value_type=UniqueIDPerMinutes)
+
+
+@app.agent(unique_users)
+async def uniqueUsers(messages):
     data_per_minute = [{"ts": "", "uids": []}]
     async for event in messages:
         minute_event = {}
@@ -36,9 +37,11 @@ async def uniqueUsers(messages, sink=[event_per_minute]):
         for minute in data_per_minute:
             if minute.get("ts") is not None and minute.get("ts") != "":
                 print(f"Unique visitors per minute at {minute['ts']}: {len(set(minute['uids']))}")
+                # 4. Push events in new topic
+                await events_per_minute.send(
+                    UniqueIDPerMinutes(date=minute["ts"], distincts_id=len(set(minute["uids"])))
+                )
 
-
-# 4. Push events in new topic
 
 if __name__ == "__main__":
     app.main()
