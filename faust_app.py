@@ -36,7 +36,6 @@ async def uniqueUsers(messages) -> None:
         for minute in data_per_minute:
             if minute.get("ts") is not None and minute.get("ts") != "":
                 print(f"Unique visitors per minute at {minute['ts']}: {len(set(minute['uids']))}")
-                # 4. Push events in new topic
                 uniqueIdperMin = UniqueIDPerMinutes(
                     date=minute["ts"], distincts_id=len(set(minute["uids"]))
                 )
