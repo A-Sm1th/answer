@@ -21,12 +21,16 @@ Executed in the Docker container :`zcat stream.gz | kafka-console-producer --bro
 By executing `kafka-console-consumer --bootstrap-server kafka:9092 --topic dood_stream` the messages will keep being printed in stdout.
 
 ## 5. Find a suitable data structure for counting and implement a simple counting mechanism, output the results to stdout
-I wanted to find a way to first explore the data structure of each event dynamically and recursively but it looks like my coding skills are not high enough for that (I tried in `discover_keys.py`)
-Then I would have been able to count each key for all events and determine the different schemas streamed in that data challenge.
+I setup the pip package Faust on my machine to consume the raw events and manipulate the data.
+As the code suggests, I isolated the timestamp values, converted them and rounded them to the minute.
+Based on that rounding, I gathered all the events based on the minute. 
+As soon as an event is discovered with a new "time", a new dictionary is created with that rounded time.
 
-The advanced solution was not possible as I was stuck at the 5th step.
-
+## 6. Results forwarding to another topic
+I tried to forward the results to another topic following the Faust documentation and the GitHub issue [solution](https://github.com/robinhood/faust/issues/305#issuecomment-472176073) but I am not able to display that solution in a new topic `kafka-console-consumer --bootstrap-server localhost:9092 --topic events_per_minute` (executed in the same Docker container as the Kafka one).
 # Bonus questions / challenges
+The main challenges remained in finding a proper Python package able to consume the data then convert them in the demanded format.
+
 ## How can you scale it to improve throughput?
 I guess that setting up Kafka on a Kubernetes Cluster would not only able a scaling in throughput but also an increase in reliability of the Kafka consumers and Kafka producers.
 
